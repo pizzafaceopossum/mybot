@@ -28,10 +28,10 @@ def serialize_commands():
 		if os.path.isfile(f) and f.endswith('.py'):
 			dump = None
 			arguments = None
-			#try:
-			dump, arguments = dump_from_path(filename[0:-3])
-			#except:
-			#	continue
+			try:
+				dump, arguments = dump_from_path(filename[0:-3])
+			except:
+				continue
 			command_list[arguments['name']] = {'args': arguments, 'dump': bytes.decode(dump, 'latin')}
 	
 	#for key in command_list:

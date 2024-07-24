@@ -1,41 +1,33 @@
 
 from listener import *
 from command import *
-import pickle as pkl
-import sys
-sys.path.append('./commands/')
 
 class CommandListener(Listener):
 	def __init__(self, **kwargs):
 		super().__init__()
-		self.registered_commands: dict = {}
+		self.registered_commands = {}
+		f = open(commands_file, 'r')
+		command_list = JSON.load(f)
+		for name in command_list:
+			command = Command(**command_list[name]['args'])
+			command.effect = dill.loads(bytes(command_list[name]['dump'], 'latin'))
+			self.register_command(command)
 	
-	def register_command(self, path: str) -> bool:
-		command_module = None
-		if path in sys.modules:
-			command_module = sys.modules[path]
-		else:
-			command_module = __import__(path, fromlist = [path])
-		
-		command = Command(name=command_module.name, desc=command_module.desc, syns=command_module.syns, effect=command_module.effect, fail_on_dedicated_keyword=command_module.fail_on_dedicated_keyword)
+	def register_command(self, command) -> bool:
 		for alias in command.syns:
 			if alias in self.registered_commands:
 				# At least one of the aliases for the command is already registered.
 				return False
 		for alias in command.syns:
 			self.registered_commands[alias] = command
-		self.registered_commands[command_module.name.upper()] = command
+		self.registered_commands[command.name.upper()] = command
 		return True
 	
-	def unregister_command(path: str) -> bool:
-		command_module = None
-		if path in sys.modules:
-			command_module = sys.modules[path]
-		else:
-			command_module = __import__(path, fromlist = [path])
+	def unregister_command(self, name: str) -> bool:
+		name = name.upper()
 		command = None
-		if command_module.name.upper() in self.registered_commands:
-			command = self.registered_commands[command_module.name.upper()]
+		if name in self.registered_commands:
+			command = self.registered_commands[name]
 		else:
 			return False
 		for alias in command.syns:
@@ -69,6 +61,4 @@ class CommandListener(Listener):
 				self.registered_commands[parsed_message[0]].effect(self, *message_args, **message_kwargs)
 
 my_listener: CommandListener = CommandListener()
-
-my_listener.register_command('example')
 my_listener.open_connection()

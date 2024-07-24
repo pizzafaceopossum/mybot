@@ -1,8 +1,7 @@
 
+from env import *
 import socket # For opening and holding a connection to the chat server
-import re # For parsing messages
 import threading # For using a separate thread so that chat can be constantly listened to while executing commands, etc.
-import json # For de/serialization of authentication data.
 
 # Listener class.
 # Opens and retains a connection to an irc-based chat service.
@@ -10,7 +9,7 @@ import json # For de/serialization of authentication data.
 class Listener(object):
 	def __init__(self, **kwargs):
 		# Login/authentication details and server details.
-		defaults = json.loads(open('.auth/auths.json', 'r').read())
+		defaults = JSON.loads(open('.auth/auths.json', 'r').read())
 		try:
 			self.server: str = kwargs.get('server', defaults['server'])
 			self.port: int = kwargs.get('port', defaults['port'])

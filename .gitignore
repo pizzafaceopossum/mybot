@@ -16,6 +16,12 @@ pyvenv.cfg
 
 # Python import cache
 *__pycache__*
+__pycache__*
+__pycache__/*
+*__pycache__/*
 
 # Other
 *.kate-swp
+
+# Development leftovers
+test*

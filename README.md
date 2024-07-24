@@ -6,11 +6,10 @@
 <br>
 <p>Planned features:</p>
 <ul>
-  <li>Priority system for command execution. (Setting a command to moderator/subscriber only, etc.)</li>
+  <li>Privilege system for command execution. (Setting a command to moderator/subscriber only, etc.)</li>
   <li>Cooldown for commands (per command and/or per user).</li>
   <li>GUI.</li>
   <li>Compatibility with YouTube chat.</li>
-  <li>Choice to use as a chatbot instead of requiring a user's oAuth.</li>
   <li>Many more default included commands.</li>
   <li>Better format for custom commands.</li>
   <li>Dynamic command loading/unloading.</li>
