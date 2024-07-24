@@ -1,8 +1,8 @@
 
 name = 'Example'
-description = 'This is an example command for development purposes. Displays the arguments and keyword arguments used.'
-privileges = 0b11111
-synonyms = ('test',)
+syns = ['test']
+desc = 'This is an example command for development purposes. Displays the arguments and keyword arguments used.'
+priv = 0b11111
 fail_on_dedicated_keyword = False
 
 def effect(self, *args, **kwargs):

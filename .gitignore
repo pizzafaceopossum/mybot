@@ -1,2 +1,21 @@
-token
+# User files
+.auth/
 logs/
+commands.json
+commands/*
+!commands/example.py
+
+# Virtual Environment files
+bin/
+include/
+lib/
+lib64/
+lib64
+venv/
+pyvenv.cfg
+
+# Python import cache
+*__pycache__*
+
+# Other
+*.kate-swp

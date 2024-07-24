@@ -1,9 +1,9 @@
 
 from listener import *
 from command import *
+import pickle as pkl
 import sys
 sys.path.append('./commands/')
-import importlib
 
 class CommandListener(Listener):
 	def __init__(self, **kwargs):
@@ -17,13 +17,12 @@ class CommandListener(Listener):
 		else:
 			command_module = __import__(path, fromlist = [path])
 		
-		command = Command(name=command_module.name, description=command_module.description, synonyms=command_module.synonyms, fail_on_dedicated_keyword=command_module.fail_on_dedicated_keyword)
-		command.effect = command_module.effect
-		for alias in command.synonyms:
+		command = Command(name=command_module.name, desc=command_module.desc, syns=command_module.syns, effect=command_module.effect, fail_on_dedicated_keyword=command_module.fail_on_dedicated_keyword)
+		for alias in command.syns:
 			if alias in self.registered_commands:
 				# At least one of the aliases for the command is already registered.
 				return False
-		for alias in command.synonyms:
+		for alias in command.syns:
 			self.registered_commands[alias] = command
 		self.registered_commands[command_module.name.upper()] = command
 		return True
@@ -39,7 +38,7 @@ class CommandListener(Listener):
 			command = self.registered_commands[command_module.name.upper()]
 		else:
 			return False
-		for alias in command.synonyms:
+		for alias in command.syns:
 			del self.registered_commands[alias]
 		del command
 		return True

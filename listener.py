@@ -2,7 +2,7 @@
 import socket # For opening and holding a connection to the chat server
 import re # For parsing messages
 import threading # For using a separate thread so that chat can be constantly listened to while executing commands, etc.
-
+import json # For de/serialization of authentication data.
 
 # Listener class.
 # Opens and retains a connection to an irc-based chat service.
@@ -10,11 +10,18 @@ import threading # For using a separate thread so that chat can be constantly li
 class Listener(object):
 	def __init__(self, **kwargs):
 		# Login/authentication details and server details.
-		self.server: str = kwargs.get('server', 'irc.chat.twitch.tv')
-		self.port: int = kwargs.get('port', 6667)
-		self.name: str = kwargs.get('name', 'pizzafaceopossum')
-		self.token: str = kwargs.get('token', open('token', 'r').read())
-		self.channel: str = kwargs.get('channel', '#pizzafaceopossum')
+		defaults = json.loads(open('.auth/auths.json', 'r').read())
+		try:
+			self.server: str = kwargs.get('server', defaults['server'])
+			self.port: int = kwargs.get('port', defaults['port'])
+			self.identity: str = kwargs.get('identity', defaults['identity'])
+			self.host: str = kwargs.get('host', defaults['host'])
+			self.username: str = kwargs.get('username', defaults['username'])
+			self.token: str = kwargs.get('token', defaults['token'])
+			self.channel: str = kwargs.get('channel', defaults['channel'])
+		except Exception as e:
+			print(f'{type(e).__name__}: auths.json does not have key \'{e.args[0]}\'')
+			exit()
 		self.socket: socket.socket = socket.socket()
 		self.listening = True
 		self.thread: threading.Thread = threading.Thread(target=self.listen)
@@ -30,10 +37,16 @@ class Listener(object):
 	# Opens the connection to the chat server.
 	def open_connection(self) -> None:
 		self.socket.connect((self.server, self.port))
-		self.socket.send(f"PASS {self.token}\n".encode('utf-8'))
-		self.socket.send(f"NICK {self.name}\n".encode('utf-8'))
-		self.socket.send(f"JOIN {self.channel}\n".encode('utf-8'))
+		#self.send(f'CAP REQ :twitch.tv/membership twitch.tv/tags twitch.tv/commands')
+		self.send(f'PASS oauth:{self.token}')
+		self.send(f'NICK {self.username}')
+		self.send(f'USER {self.identity} {self.host} bla :{self.username}\r')
+		self.send(f'JOIN {self.channel}')
 		self.thread.start()
+	
+	# Shortens further code. All messages need to be sent with an ending newline and encoded anyway.
+	def send(self, message_text):
+		self.socket.send((message_text + '\n').encode('utf-8'))
 	
 	# Listening loop.
 	def listen(self) -> None:
@@ -43,7 +56,7 @@ class Listener(object):
 			# Respond to twitch's occasional pinging message.
 			if raw_message.startswith('PING'):
 				print("Pinged")
-				self.socket.send("PONG\n".encode('utf-8'))
+				self.sendUTF("PONG")
 				continue
 			
 			# Slice up recieved twitch messages (currently not sure of any difference in the various name displays)
@@ -61,7 +74,7 @@ class Listener(object):
 		self.thread.join()
 	
 	def send_message(self, message_text):
-		self.socket.send(f'PRIVMSG {self.channel} :{message_text}\n'.encode('utf-8'))
+		self.send(f'PRIVMSG {self.channel} :{message_text}')
 	
 	def close_connection(self) -> None:
 		self.listening = False
